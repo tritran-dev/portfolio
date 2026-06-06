@@ -403,7 +403,9 @@
         .stack-container {
             position: relative;
             width: 100%;
-            height: 100%;
+            aspect-ratio: 1;
+            max-width: 28rem;
+            margin: 0 auto;
             perspective: 600px;
         }
 
@@ -425,26 +427,56 @@
         }
 
         .stack-card {
-            border-radius: 1rem;
-            overflow: hidden;
             width: 100%;
             height: 100%;
             display: flex;
-            align-items: center;
+            align-items: flex-end;
             justify-content: center;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
             transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             will-change: transform;
         }
 
         .stack-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 1rem;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
             pointer-events: none;
             user-select: none;
             -webkit-user-drag: none;
+        }
+
+        /* Tab Navigation */
+        .photo-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 0;
+            overflow-x: auto;
+        }
+
+        .photo-tab {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            color: #9ca3af;
+            padding: 10px 18px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .photo-tab:hover {
+            color: #e0e0e0;
+        }
+
+        .photo-tab.active {
+            color: var(--neon-cyan);
+            border-bottom-color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
         }
     </style>
 </head>
@@ -714,27 +746,31 @@
                 <div class="h-[1px] bg-gray-700 flex-grow ml-6"></div>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div class="space-y-6">
-                    <div class="glass-panel p-8 rounded-2xl">
-                        <h3 class="text-xl font-bold text-white mb-4">Moments I've Captured</h3>
-                        <p class="text-gray-400 leading-relaxed mb-4">
-                            Photography is my way of seeing the world differently. From landscapes to street photography,
-                            each shot tells a story of light, composition, and emotion.
+            <!-- Tab Navigation -->
+            <div class="photo-tabs mb-8">
+                <button class="photo-tab active" data-album="msl">Mekong Salt Lab</button>
+                <button class="photo-tab" data-album="street">Street Photo</button>
+                <button class="photo-tab" data-album="undp">UNDP</button>
+                <button class="photo-tab" data-album="unl">UNL</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="grid md:grid-cols-3 gap-8 items-center">
+                <div class="space-y-4">
+                    <div class="glass-panel p-5 rounded-2xl">
+                        <h3 class="text-base font-bold text-white mb-2" id="photo-album-title">Mekong Salt Lab</h3>
+                        <p class="text-gray-400 leading-relaxed text-xs" id="photo-album-desc">
+                            Documenting field research at the Mekong Salt Lab project — capturing scientists, field equipment, and the lab environment.
                         </p>
-                        <p class="text-gray-400 leading-relaxed mb-4">
-                            I shoot with a focus on natural light and candid moments — whether I'm wandering through urban
-                            streets or exploring remote landscapes.
-                        </p>
-                        <div class="mt-6 flex items-center gap-3 text-cyan-400 text-sm font-mono">
-                            <i data-lucide="camera" class="w-5 h-5"></i>
-                            <span>Drag or click to explore</span>
+                        <div class="mt-3 flex items-center gap-2 text-cyan-400 text-xs font-mono">
+                            <i data-lucide="images" class="w-3.5 h-3.5"></i>
+                            <span id="photo-count">7 photos</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex justify-center">
-                    <div id="photo-stack" class="w-64 h-64 md:w-80 md:h-80"></div>
+                <div class="md:col-span-2 flex justify-center md:justify-end">
+                    <div id="photo-stack"></div>
                 </div>
             </div>
         </section>
@@ -1045,6 +1081,8 @@
                 }));
 
                 this.stack = cards;
+                var self = this;
+                var loadedCount = 0;
 
                 cards.forEach((card) => {
                     const wrapper = document.createElement('div');
@@ -1058,9 +1096,25 @@
                     cardEl.className = 'stack-card';
 
                     const img = document.createElement('img');
-                    img.src = card.src;
                     img.alt = 'Photo ' + card.id;
                     img.draggable = false;
+
+                    function onImgLoad() {
+                        loadedCount++;
+                        if (loadedCount >= cards.length) {
+                            requestAnimationFrame(function () {
+                                self._equalizeImageHeights();
+                            });
+                        }
+                    }
+
+                    img.addEventListener('load', onImgLoad);
+                    img.addEventListener('error', onImgLoad);
+                    if (img.complete) {
+                        onImgLoad();
+                    }
+
+                    img.src = card.src;
 
                     cardEl.appendChild(img);
                     wrapper.appendChild(cardEl);
@@ -1099,6 +1153,25 @@
 
                 if (this.autoplay && this.stack.length > 1) {
                     this._startAutoplay();
+                }
+            }
+
+            _equalizeImageHeights() {
+                var imgs = this.container.querySelectorAll('.stack-card img');
+                if (imgs.length === 0) return;
+
+                var landscapeHeight = null;
+                for (var i = 0; i < imgs.length; i++) {
+                    if (imgs[i].naturalWidth > imgs[i].naturalHeight) {
+                        landscapeHeight = imgs[i].offsetHeight;
+                        break;
+                    }
+                }
+
+                if (landscapeHeight === null) return;
+
+                for (var j = 0; j < imgs.length; j++) {
+                    imgs[j].style.maxHeight = landscapeHeight + 'px';
                 }
             }
 
@@ -1186,7 +1259,7 @@
                     var scale = 1 + i * 0.06 - len * 0.06;
 
                     card.el.style.transform = 'rotateZ(' + rotateZ + 'deg) scale(' + scale + ')';
-                    card.el.style.transformOrigin = '90% 90%';
+                    card.el.style.transformOrigin = '50% 100%';
                     card.el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
                     card.el.style.zIndex = i + 1;
                 }
@@ -1211,6 +1284,20 @@
                 }
             }
 
+            setImages(images) {
+                this._stopAutoplay();
+                this.stack = [];
+                this.container.innerHTML = '';
+                document.removeEventListener('pointermove', this._onPointerMove);
+                document.removeEventListener('pointerup', this._onPointerUp);
+                this.images = images;
+                this.dragCard = null;
+                this.isDragging = false;
+                this.currentX = 0;
+                this.currentY = 0;
+                this._render();
+            }
+
             destroy() {
                 this._stopAutoplay();
                 this.container.innerHTML = '';
@@ -1222,12 +1309,15 @@
         window.addEventListener('load', function () {
             var photoContainer = document.getElementById('photo-stack');
             if (photoContainer) {
-                new PhotoStack(photoContainer, {
+                window.__photoStack = new PhotoStack(photoContainer, {
                     images: [
-                        'https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?q=80&w=500&auto=format',
-                        'https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=500&auto=format',
-                        'https://images.unsplash.com/photo-1452626212852-811d58933cae?q=80&w=500&auto=format',
-                        'https://images.unsplash.com/photo-1572120360610-d971b9d7767c?q=80&w=500&auto=format'
+                        'assets/img/photography/msl/DSC03422.webp',
+                        'assets/img/photography/msl/DSC03507.webp',
+                        'assets/img/photography/msl/DSC04631-2.webp',
+                        'assets/img/photography/msl/DSC06136.webp',
+                        'assets/img/photography/msl/DSC06929.webp',
+                        'assets/img/photography/msl/DSC07139.webp',
+                        'assets/img/photography/msl/DSC07788-2.webp'
                     ],
                     randomRotation: true,
                     sensitivity: 180,
@@ -1240,6 +1330,88 @@
                 });
             }
         });
+
+        // ─── Tab Slider Logic ──────────────────────────────────────────────
+        (function () {
+            var albums = {
+                msl: {
+                    title: 'Mekong Salt Lab',
+                    desc: 'Documenting field research at the Mekong Salt Lab project \u2014 capturing scientists, field equipment, and the lab environment.',
+                    images: [
+                        'assets/img/photography/msl/DSC03422.webp',
+                        'assets/img/photography/msl/DSC03507.webp',
+                        'assets/img/photography/msl/DSC04631-2.webp',
+                        'assets/img/photography/msl/DSC06136.webp',
+                        'assets/img/photography/msl/DSC06929.webp',
+                        'assets/img/photography/msl/DSC07139.webp',
+                        'assets/img/photography/msl/DSC07788-2.webp'
+                    ]
+                },
+                street: {
+                    title: 'Street Photography',
+                    desc: 'Candid moments and urban landscapes \u2014 fleeting expressions, light and shadow play on city streets.',
+                    images: [
+                        'assets/img/photography/street/DSC00482.webp',
+                        'assets/img/photography/street/DSC00974.webp',
+                        'assets/img/photography/street/DSC04450-3.webp',
+                        'assets/img/photography/street/DSC04963.webp',
+                        'assets/img/photography/street/DSC08598.webp',
+                        'assets/img/photography/street/DSC08628.webp',
+                        'assets/img/photography/street/DSC08832.webp',
+                        'assets/img/photography/street/DSC08973.webp',
+                        'assets/img/photography/street/DSC09810-Enhanced-NR.webp',
+                        'assets/img/photography/street/DSC_3323.webp'
+                    ]
+                },
+                undp: {
+                    title: 'UNDP',
+                    desc: 'Coverage of UNDP initiatives and events \u2014 documenting community impact and development projects.',
+                    images: [
+                        'assets/img/photography/undp/DSC02645.webp',
+                        'assets/img/photography/undp/DSC08271.webp',
+                        'assets/img/photography/undp/DSC08314.webp',
+                        'assets/img/photography/undp/IMG_3032-2.webp',
+                        'assets/img/photography/undp/IMG_5762.webp',
+                        'assets/img/photography/undp/IMG_8426.webp'
+                    ]
+                },
+                unl: {
+                    title: 'UNL',
+                    desc: 'Photos from UNL-related activities \u2014 conferences, workshops, and field visits.',
+                    images: [
+                        'assets/img/photography/unl/DSC05818.webp',
+                        'assets/img/photography/unl/DSC05838.webp',
+                        'assets/img/photography/unl/DSC06396.webp',
+                        'assets/img/photography/unl/DSC06651.webp',
+                        'assets/img/photography/unl/DSC06911.webp',
+                        'assets/img/photography/unl/DSC07069.webp',
+                        'assets/img/photography/unl/DSC07965.webp'
+                    ]
+                }
+            };
+
+            var tabs = document.querySelectorAll('.photo-tab');
+            var titleEl = document.getElementById('photo-album-title');
+            var descEl = document.getElementById('photo-album-desc');
+            var countEl = document.getElementById('photo-count');
+
+            tabs.forEach(function (tab) {
+                tab.addEventListener('click', function () {
+                    var albumKey = this.dataset.album;
+                    var data = albums[albumKey];
+                    if (!data || !window.__photoStack) return;
+
+                    tabs.forEach(function (t) { t.classList.remove('active'); });
+                    this.classList.add('active');
+
+                    titleEl.textContent = data.title;
+                    descEl.textContent = data.desc;
+                    countEl.textContent = data.images.length + ' photos';
+
+                    window.__photoStack.setImages(data.images);
+                });
+            });
+        })();
     </script>
 </body>
 
