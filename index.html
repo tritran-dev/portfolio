@@ -405,7 +405,7 @@
             display: flex;
             width: 100%;
             aspect-ratio: 2 / 3;
-            max-width: 280px;
+            max-width: 50%;
             margin: 0 auto;
             font-size: 1cqmin;
             pointer-events: none;
@@ -464,7 +464,6 @@
             object-fit: contain;
             position: absolute;
             left: 50%;
-            transform: translateX(-50%);
         }
     </style>
 </head>
@@ -1056,19 +1055,20 @@
 
         var blankSvg = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect fill="#ffffff" width="400" height="600"/></svg>');
 
-        function setupLandscape(img) {
+        function setupLandscape(img, choice) {
             function onLoad() {
                 if (this.naturalWidth > this.naturalHeight) {
                     this.classList.add('img--landscape-fit');
-                    requestAnimationFrame(function () {
-                        var containerH = img.parentElement.clientHeight;
-                        var imgH = img.offsetHeight;
-                        if (containerH > 0 && imgH > 0) {
-                            var maxTopPct = Math.max(0, (containerH - imgH) / containerH * 100);
-                            var top = Math.random() * maxTopPct;
-                            img.style.top = top + '%';
-                        }
-                    });
+                    if (choice === 0) {
+                        img.style.top = '50%';
+                        img.style.transform = 'translate(-50%, -50%)';
+                    } else if (choice === 1) {
+                        img.style.top = '10%';
+                        img.style.transform = 'translateX(-50%)';
+                    } else {
+                        img.style.bottom = '10%';
+                        img.style.transform = 'translateX(-50%)';
+                    }
                 }
             }
             if (img.complete && img.naturalWidth > 0) onLoad.call(img);
@@ -1095,14 +1095,16 @@
                 frontEl.className = 'flipbook__front';
                 var frontImg = document.createElement('img');
                 frontImg.src = frontSrc; frontImg.draggable = false;
-                setupLandscape(frontImg);
+                var choiceFront = Math.floor(Math.random() * 3);
+                var choiceBack = (choiceFront + 1 + Math.floor(Math.random() * 2)) % 3;
+                setupLandscape(frontImg, choiceFront);
                 frontEl.appendChild(frontImg);
 
                 var backEl = document.createElement('div');
                 backEl.className = 'flipbook__back';
                 var backImg = document.createElement('img');
                 backImg.src = backSrc; backImg.draggable = false;
-                setupLandscape(backImg);
+                setupLandscape(backImg, choiceBack);
                 backEl.appendChild(backImg);
 
                 sheet.appendChild(frontEl);
