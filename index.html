@@ -727,11 +727,16 @@
 
         <!-- Photography Section -->
         <section id="photography" class="py-24 px-6 max-w-6xl mx-auto">
-            <div class="flex items-center mb-12">
+            <div class="flex items-center mb-8">
                 <span class="text-2xl font-mono text-cyan-400 mr-4">03.</span>
                 <h2 class="text-3xl md:text-4xl font-bold text-white aberration-static">Photography</h2>
                 <div class="h-[1px] bg-gray-700 flex-grow ml-6"></div>
             </div>
+
+            <p class="text-gray-300 leading-relaxed mb-12 max-w-3xl">
+                I shoot documentary and candid/street photography — drawn to raw, unposed moments where light and
+                emotion collide. Click on any album below to flip through the photos.
+            </p>
 
             <!-- Album: Mekong Salt Lab -->
             <div class="grid md:grid-cols-3 gap-8 items-center mb-16">
@@ -1056,6 +1061,7 @@
         var blankSvg = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect fill="#ffffff" width="400" height="600"/></svg>');
 
         function setupLandscape(img, choice) {
+            if (choice < 0) return;
             function onLoad() {
                 if (this.naturalWidth > this.naturalHeight) {
                     this.classList.add('img--landscape-fit');
@@ -1081,6 +1087,7 @@
 
             container.className = 'flipbook';
             container.style.setProperty('--c', '0');
+            var prevBack = -1;
 
             for (var i = 0; i < imagePaths.length; i += 2) {
                 var frontSrc = imagePaths[i];
@@ -1095,8 +1102,18 @@
                 frontEl.className = 'flipbook__front';
                 var frontImg = document.createElement('img');
                 frontImg.src = frontSrc; frontImg.draggable = false;
-                var choiceFront = Math.floor(Math.random() * 3);
-                var choiceBack = (choiceFront + 1 + Math.floor(Math.random() * 2)) % 3;
+                var choiceFront;
+                do {
+                    choiceFront = Math.floor(Math.random() * 3);
+                } while (choiceFront === prevBack);
+                var choiceBack;
+                do {
+                    choiceBack = Math.floor(Math.random() * 3);
+                } while (choiceBack === choiceFront);
+                prevBack = choiceBack;
+                if (sheetIdx === 0) {
+                    choiceFront = -1;
+                }
                 setupLandscape(frontImg, choiceFront);
                 frontEl.appendChild(frontImg);
 
@@ -1131,57 +1148,62 @@
                 msl: {
                     id: 'flipbook-msl',
                     images: [
-                        'assets/img/photography/msl/DSC03422.webp',
-                        'assets/img/photography/msl/DSC03507.webp',
-                        'assets/img/photography/msl/DSC04631-2.webp',
-                        'assets/img/photography/msl/DSC06136.webp',
-                        'assets/img/photography/msl/DSC06929.webp',
-                        'assets/img/photography/msl/DSC07139.webp',
-                        'assets/img/photography/msl/DSC07788-2.webp'
+                        'assets/img/photography/msl/1.webp',
+                        'assets/img/photography/msl/2.webp',
+                        'assets/img/photography/msl/3.webp',
+                        'assets/img/photography/msl/4.webp',
+                        'assets/img/photography/msl/5.webp',
+                        'assets/img/photography/msl/6.webp',
+                        'assets/img/photography/msl/7.webp'
                     ]
                 },
                 street: {
                     id: 'flipbook-street',
                     images: [
-                        'assets/img/photography/street/DSC00482.webp',
-                        'assets/img/photography/street/DSC00974.webp',
-                        'assets/img/photography/street/DSC04450-3.webp',
-                        'assets/img/photography/street/DSC04963.webp',
-                        'assets/img/photography/street/DSC08598.webp',
-                        'assets/img/photography/street/DSC08628.webp',
-                        'assets/img/photography/street/DSC08832.webp',
-                        'assets/img/photography/street/DSC08973.webp',
-                        'assets/img/photography/street/DSC09810-Enhanced-NR.webp',
-                        'assets/img/photography/street/DSC_3323.webp'
+                        'assets/img/photography/street/1.webp',
+                        'assets/img/photography/street/2.webp',
+                        'assets/img/photography/street/3.webp',
+                        'assets/img/photography/street/4.webp',
+                        'assets/img/photography/street/5.webp',
+                        'assets/img/photography/street/6.webp',
+                        'assets/img/photography/street/7.webp',
+                        'assets/img/photography/street/8.webp',
+                        'assets/img/photography/street/9.webp',
+                        'assets/img/photography/street/10.webp'
                     ]
                 },
                 undp: {
                     id: 'flipbook-undp',
                     images: [
-                        'assets/img/photography/undp/DSC02645.webp',
-                        'assets/img/photography/undp/DSC08271.webp',
-                        'assets/img/photography/undp/DSC08314.webp',
-                        'assets/img/photography/undp/IMG_3032-2.webp',
-                        'assets/img/photography/undp/IMG_5762.webp',
-                        'assets/img/photography/undp/IMG_8426.webp'
+                        'assets/img/photography/undp/1.webp',
+                        'assets/img/photography/undp/2.webp',
+                        'assets/img/photography/undp/3.webp',
+                        'assets/img/photography/undp/4.webp',
+                        'assets/img/photography/undp/5.webp',
+                        'assets/img/photography/undp/6.webp'
                     ]
                 },
                 unl: {
                     id: 'flipbook-unl',
                     images: [
-                        'assets/img/photography/unl/DSC05818.webp',
-                        'assets/img/photography/unl/DSC05838.webp',
-                        'assets/img/photography/unl/DSC06396.webp',
-                        'assets/img/photography/unl/DSC06651.webp',
-                        'assets/img/photography/unl/DSC06911.webp',
-                        'assets/img/photography/unl/DSC07069.webp',
-                        'assets/img/photography/unl/DSC07965.webp'
+                        'assets/img/photography/unl/1.webp',
+                        'assets/img/photography/unl/2.webp',
+                        'assets/img/photography/unl/3.webp',
+                        'assets/img/photography/unl/4.webp',
+                        'assets/img/photography/unl/5.webp',
+                        'assets/img/photography/unl/6.webp',
+                        'assets/img/photography/unl/7.webp'
                     ]
                 }
             };
 
             for (var key in albums) {
                 var a = albums[key];
+                a.images.sort(function (x, y) {
+                    var numX = parseInt(x.split('/').pop().split('.')[0]) || 0;
+                    var numY = parseInt(y.split('/').pop().split('.')[0]) || 0;
+                    return numX - numY;
+                });
                 initFlipbook(a.id, a.images);
             }
         });
