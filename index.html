@@ -399,84 +399,72 @@
             border-radius: 20px;
         }
 
-        /* Photo Stack Component */
-        .stack-container {
+        /* Flipbook */
+        .flipbook {
             position: relative;
-            width: 100%;
-            aspect-ratio: 1;
-            max-width: 28rem;
-            margin: 0 auto;
-            perspective: 600px;
-        }
-
-        .stack-card-rotate {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            cursor: grab;
-            touch-action: none;
-            user-select: none;
-        }
-
-        .stack-card-rotate:active {
-            cursor: grabbing;
-        }
-
-        .stack-card-rotate.click-only {
-            cursor: pointer;
-        }
-
-        .stack-card {
-            width: 100%;
-            height: 100%;
             display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            will-change: transform;
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            max-width: 280px;
+            margin: 0 auto;
+            font-size: 1cqmin;
+            pointer-events: none;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transition: translate 0.6s;
+            translate: calc(min(var(--c), 1) * 50%) 0%;
+            rotate: 1 0 0 25deg;
         }
 
-        .stack-card img {
-            max-width: 100%;
-            max-height: 100%;
-            border-radius: 1rem;
+        .flipbook__sheet {
+            --thickness: 4;
+            flex: none;
+            display: flex;
+            width: 100%;
+            pointer-events: all;
+            user-select: none;
+            transform-style: preserve-3d;
+            transform-origin: left center;
+            transition: transform 0.6s, rotate 0.6s ease-in calc((min(var(--i), var(--c)) - max(var(--i), var(--c))) * 30ms);
+            translate: calc(var(--i) * -100%) 0px 0px;
+            transform: translateZ(calc((var(--c) - var(--i) - 0.5) * calc(var(--thickness) * .23cqmin)));
+            rotate: 0 1 0 calc(clamp(0, var(--c) - var(--i), 1) * -180deg);
+        }
+
+        .flipbook__front,
+        .flipbook__back {
+            position: relative;
+            flex: none;
+            width: 100%;
+            backface-visibility: hidden;
+            overflow: hidden;
+            background-color: #ffffff;
+            translate: 0px;
             border: 1px solid var(--glass-border);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
+        }
+
+        .flipbook__back {
+            translate: -100% 0;
+            rotate: 0 1 0 180deg;
+        }
+
+        .flipbook__sheet img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             pointer-events: none;
             user-select: none;
-            -webkit-user-drag: none;
         }
 
-        /* Tab Navigation */
-        .photo-tabs {
-            display: flex;
-            gap: 0;
-            border-bottom: 1px solid var(--glass-border);
-            padding-bottom: 0;
-            overflow-x: auto;
-        }
-
-        .photo-tab {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.8rem;
-            color: #9ca3af;
-            padding: 10px 18px;
-            background: none;
-            border: none;
-            border-bottom: 2px solid transparent;
-            cursor: pointer;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-
-        .photo-tab:hover {
-            color: #e0e0e0;
-        }
-
-        .photo-tab.active {
-            color: var(--neon-cyan);
-            border-bottom-color: var(--neon-cyan);
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        .flipbook__sheet img.img--landscape-fit {
+            width: 90%;
+            height: auto;
+            max-height: 90%;
+            object-fit: contain;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
         }
     </style>
 </head>
@@ -746,31 +734,71 @@
                 <div class="h-[1px] bg-gray-700 flex-grow ml-6"></div>
             </div>
 
-            <!-- Tab Navigation -->
-            <div class="photo-tabs mb-8">
-                <button class="photo-tab active" data-album="msl">Mekong Salt Lab</button>
-                <button class="photo-tab" data-album="street">Street Photo</button>
-                <button class="photo-tab" data-album="undp">UNDP</button>
-                <button class="photo-tab" data-album="unl">UNL</button>
-            </div>
-
-            <!-- Tab Content -->
-            <div class="grid md:grid-cols-3 gap-8 items-center">
+            <!-- Album: Mekong Salt Lab -->
+            <div class="grid md:grid-cols-3 gap-8 items-center mb-16">
                 <div class="space-y-4">
                     <div class="glass-panel p-5 rounded-2xl">
-                        <h3 class="text-base font-bold text-white mb-2" id="photo-album-title">Mekong Salt Lab</h3>
-                        <p class="text-gray-400 leading-relaxed text-xs" id="photo-album-desc">
-                            Documenting field research at the Mekong Salt Lab project — capturing scientists, field equipment, and the lab environment.
-                        </p>
+                        <h3 class="text-base font-bold text-white mb-2">Mekong Salt Lab</h3>
+                        <p class="text-gray-400 leading-relaxed text-xs">Documenting field research at the Mekong Salt Lab project — capturing scientists, field equipment, and the lab environment.</p>
                         <div class="mt-3 flex items-center gap-2 text-cyan-400 text-xs font-mono">
-                            <i data-lucide="images" class="w-3.5 h-3.5"></i>
-                            <span id="photo-count">7 photos</span>
+                            <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                            <span>4 pages</span>
                         </div>
                     </div>
                 </div>
-
                 <div class="md:col-span-2 flex justify-center md:justify-end">
-                    <div id="photo-stack"></div>
+                    <div id="flipbook-msl"></div>
+                </div>
+            </div>
+
+            <!-- Album: Street Photo -->
+            <div class="grid md:grid-cols-3 gap-8 items-center mb-16">
+                <div class="space-y-4">
+                    <div class="glass-panel p-5 rounded-2xl">
+                        <h3 class="text-base font-bold text-white mb-2">Street Photography</h3>
+                        <p class="text-gray-400 leading-relaxed text-xs">Candid moments and urban landscapes — fleeting expressions, light and shadow play on city streets.</p>
+                        <div class="mt-3 flex items-center gap-2 text-cyan-400 text-xs font-mono">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                            <span>5 pages</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-2 flex justify-center md:justify-end">
+                    <div id="flipbook-street"></div>
+                </div>
+            </div>
+
+            <!-- Album: UNDP -->
+            <div class="grid md:grid-cols-3 gap-8 items-center mb-16">
+                <div class="space-y-4">
+                    <div class="glass-panel p-5 rounded-2xl">
+                        <h3 class="text-base font-bold text-white mb-2">UNDP</h3>
+                        <p class="text-gray-400 leading-relaxed text-xs">Coverage of UNDP initiatives and events — documenting community impact and development projects.</p>
+                        <div class="mt-3 flex items-center gap-2 text-cyan-400 text-xs font-mono">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                            <span>3 pages</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-2 flex justify-center md:justify-end">
+                    <div id="flipbook-undp"></div>
+                </div>
+            </div>
+
+            <!-- Album: UNL -->
+            <div class="grid md:grid-cols-3 gap-8 items-center mb-16">
+                <div class="space-y-4">
+                    <div class="glass-panel p-5 rounded-2xl">
+                        <h3 class="text-base font-bold text-white mb-2">UNL</h3>
+                        <p class="text-gray-400 leading-relaxed text-xs">Photos from UNL-related activities — conferences, workshops, and field visits.</p>
+                        <div class="mt-3 flex items-center gap-2 text-cyan-400 text-xs font-mono">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                            <span>4 pages</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-2 flex justify-center md:justify-end">
+                    <div id="flipbook-unl"></div>
                 </div>
             </div>
         </section>
@@ -1024,319 +1052,82 @@
         // Mouse movement subtle parallax for background text or shapes could go here
         // Keeping it clean for performance in this version
 
-        // ─── Photo Stack Component ───────────────────────────────────────────
-        class PhotoStack {
-            constructor(container, options = {}) {
-                this.container = container;
-                this.randomRotation = options.randomRotation ?? false;
-                this.sensitivity = options.sensitivity ?? 180;
-                this.sendToBackOnClick = options.sendToBackOnClick ?? true;
-                this.autoplay = options.autoplay ?? true;
-                this.autoplayDelay = options.autoplayDelay ?? 3000;
-                this.pauseOnHover = options.pauseOnHover ?? false;
-                this.mobileClickOnly = options.mobileClickOnly ?? true;
-                this.mobileBreakpoint = options.mobileBreakpoint ?? 768;
-                this.images = options.images || [];
+        // ─── Flipbook Component ────────────────────────────────────────────
 
-                this.stack = [];
-                this.isDragging = false;
-                this.isPaused = false;
-                this.startX = 0;
-                this.startY = 0;
-                this.currentX = 0;
-                this.currentY = 0;
-                this.autoplayTimer = null;
-                this.dragCard = null;
-                this.wasDrag = false;
-                this.isMobile = false;
+        var blankSvg = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect fill="#ffffff" width="400" height="600"/></svg>');
 
-                this._onPointerMove = this._onPointerMove.bind(this);
-                this._onPointerUp = this._onPointerUp.bind(this);
-
-                this._checkMobile();
-                window.addEventListener('resize', () => this._checkMobile());
-                this._render();
-            }
-
-            _checkMobile() {
-                this.isMobile = window.innerWidth < this.mobileBreakpoint;
-                if (this.stack.length) {
-                    this.stack.forEach(card => {
-                        if (this.mobileClickOnly && this.isMobile) {
-                            card.el.classList.add('click-only');
-                        } else {
-                            card.el.classList.remove('click-only');
+        function setupLandscape(img) {
+            function onLoad() {
+                if (this.naturalWidth > this.naturalHeight) {
+                    this.classList.add('img--landscape-fit');
+                    requestAnimationFrame(function () {
+                        var containerH = img.parentElement.clientHeight;
+                        var imgH = img.offsetHeight;
+                        if (containerH > 0 && imgH > 0) {
+                            var maxTopPct = Math.max(0, (containerH - imgH) / containerH * 100);
+                            var top = Math.random() * maxTopPct;
+                            img.style.top = top + '%';
                         }
                     });
                 }
             }
+            if (img.complete && img.naturalWidth > 0) onLoad.call(img);
+            else img.addEventListener('load', onLoad);
+        }
 
-            _render() {
-                this.container.innerHTML = '';
-                this.container.classList.add('stack-container');
+        function initFlipbook(containerId, imagePaths) {
+            var container = document.getElementById(containerId);
+            if (!container) return;
 
-                const cards = this.images.map((src, i) => ({
-                    id: i + 1,
-                    src: src
-                }));
+            container.className = 'flipbook';
+            container.style.setProperty('--c', '0');
 
-                this.stack = cards;
-                var self = this;
-                var loadedCount = 0;
+            for (var i = 0; i < imagePaths.length; i += 2) {
+                var frontSrc = imagePaths[i];
+                var backSrc = (i + 1 < imagePaths.length) ? imagePaths[i + 1] : blankSvg;
+                var sheetIdx = i / 2;
 
-                cards.forEach((card) => {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'stack-card-rotate';
-                    if (this.mobileClickOnly && this.isMobile) {
-                        wrapper.classList.add('click-only');
-                    }
-                    wrapper.dataset.cardId = card.id;
+                var sheet = document.createElement('div');
+                sheet.className = 'flipbook__sheet';
+                sheet.style.setProperty('--i', String(sheetIdx));
 
-                    const cardEl = document.createElement('div');
-                    cardEl.className = 'stack-card';
+                var frontEl = document.createElement('div');
+                frontEl.className = 'flipbook__front';
+                var frontImg = document.createElement('img');
+                frontImg.src = frontSrc; frontImg.draggable = false;
+                setupLandscape(frontImg);
+                frontEl.appendChild(frontImg);
 
-                    const img = document.createElement('img');
-                    img.alt = 'Photo ' + card.id;
-                    img.draggable = false;
+                var backEl = document.createElement('div');
+                backEl.className = 'flipbook__back';
+                var backImg = document.createElement('img');
+                backImg.src = backSrc; backImg.draggable = false;
+                setupLandscape(backImg);
+                backEl.appendChild(backImg);
 
-                    function onImgLoad() {
-                        loadedCount++;
-                        if (loadedCount >= cards.length) {
-                            requestAnimationFrame(function () {
-                                self._equalizeImageHeights();
-                            });
-                        }
-                    }
+                sheet.appendChild(frontEl);
+                sheet.appendChild(backEl);
+                container.appendChild(sheet);
 
-                    img.addEventListener('load', onImgLoad);
-                    img.addEventListener('error', onImgLoad);
-                    if (img.complete) {
-                        onImgLoad();
-                    }
-
-                    img.src = card.src;
-
-                    cardEl.appendChild(img);
-                    wrapper.appendChild(cardEl);
-
-                    wrapper.addEventListener('pointerdown', (e) => {
-                        if (this.mobileClickOnly && this.isMobile) return;
-                        if (card.id !== this.stack[this.stack.length - 1].id) return;
-                        this.isDragging = true;
-                        this.wasDrag = false;
-                        this.dragCard = card;
-                        this.startX = e.clientX;
-                        this.startY = e.clientY;
-                        wrapper.setPointerCapture(e.pointerId);
+                (function (idx) {
+                    sheet.addEventListener('click', function (e) {
+                        var curr = e.target.closest('.flipbook__back') ? idx : idx + 1;
+                        container.style.setProperty('--c', String(curr));
                     });
+                })(sheetIdx);
+            }
 
-                    wrapper.addEventListener('click', () => {
-                        if (this.wasDrag) return;
-                        if (this.sendToBackOnClick || (this.mobileClickOnly && this.isMobile)) {
-                            this.sendToBack(card.id);
-                        }
-                    });
-
-                    this.container.appendChild(wrapper);
-                    card.el = wrapper;
-                });
-
-                document.addEventListener('pointermove', this._onPointerMove);
-                document.addEventListener('pointerup', this._onPointerUp);
-
-                if (this.pauseOnHover) {
-                    this.container.addEventListener('mouseenter', () => { this.isPaused = true; });
-                    this.container.addEventListener('mouseleave', () => { this.isPaused = false; });
+            document.addEventListener('click', function (e) {
+                if (!container.contains(e.target)) {
+                    container.style.setProperty('--c', '0');
                 }
-
-                this._updatePositions();
-
-                if (this.autoplay && this.stack.length > 1) {
-                    this._startAutoplay();
-                }
-            }
-
-            _equalizeImageHeights() {
-                var imgs = this.container.querySelectorAll('.stack-card img');
-                if (imgs.length === 0) return;
-
-                var landscapeHeight = null;
-                for (var i = 0; i < imgs.length; i++) {
-                    if (imgs[i].naturalWidth > imgs[i].naturalHeight) {
-                        landscapeHeight = imgs[i].offsetHeight;
-                        break;
-                    }
-                }
-
-                if (landscapeHeight === null) return;
-
-                for (var j = 0; j < imgs.length; j++) {
-                    imgs[j].style.maxHeight = landscapeHeight + 'px';
-                }
-            }
-
-            _onPointerMove(e) {
-                if (!this.isDragging || !this.dragCard) return;
-
-                this.currentX = e.clientX - this.startX;
-                this.currentY = e.clientY - this.startY;
-
-                if (Math.abs(this.currentX) > 4 || Math.abs(this.currentY) > 4) {
-                    this.wasDrag = true;
-                }
-
-                const factor = 0.6;
-                const rotateX = (this.currentY / this.sensitivity) * -60 * factor;
-                const rotateY = (this.currentX / this.sensitivity) * 60 * factor;
-
-                this.dragCard.el.style.transition = 'none';
-                this.dragCard.el.style.transform =
-                    'translate(' + this.currentX + 'px, ' + this.currentY + 'px) ' +
-                    'rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
-                this.dragCard.el.style.zIndex = 999;
-            }
-
-            _onPointerUp(e) {
-                if (!this.isDragging || !this.dragCard) return;
-                this.isDragging = false;
-
-                var offset = Math.abs(this.currentX) + Math.abs(this.currentY);
-
-                if (offset > this.sensitivity) {
-                    var velX = this.currentX * 2;
-                    var velY = this.currentY * 2;
-                    var target = this.dragCard;
-                    target.el.style.transition = 'transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease';
-                    target.el.style.transform =
-                        'translate(' + velX + 'px, ' + velY + 'px) ' +
-                        'rotateX(' + (this.currentY / this.sensitivity * -90) + 'deg) ' +
-                        'rotateY(' + (this.currentX / this.sensitivity * 90) + 'deg) ' +
-                        'scale(0.6)';
-                    target.el.style.opacity = '0';
-                    var self = this;
-                    setTimeout(function () {
-                        self.sendToBack(target.id);
-                        target.el.style.opacity = '';
-                        target.el.style.transition = '';
-                        target.el.style.transform = '';
-                        target.el.style.zIndex = '';
-                        self._updatePositions();
-                    }, 350);
-                } else {
-                    this.dragCard.el.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                    this.dragCard.el.style.transform = '';
-                    this.dragCard.el.style.zIndex = '';
-                }
-
-                this.currentX = 0;
-                this.currentY = 0;
-                this.dragCard = null;
-            }
-
-            sendToBack(id) {
-                this._stopAutoplay();
-                var index = -1;
-                for (var i = 0; i < this.stack.length; i++) {
-                    if (this.stack[i].id === id) {
-                        index = i;
-                        break;
-                    }
-                }
-                if (index === -1) return;
-                var card = this.stack.splice(index, 1)[0];
-                this.stack.unshift(card);
-                this._updatePositions();
-                if (this.autoplay) this._startAutoplay();
-            }
-
-            _updatePositions() {
-                var len = this.stack.length;
-                for (var i = 0; i < len; i++) {
-                    var card = this.stack[i];
-                    var position = len - i - 1;
-                    var randomRotate = this.randomRotation ? (Math.random() * 10 - 5) : 0;
-                    var rotateZ = position * 4 + randomRotate;
-                    var scale = 1 + i * 0.06 - len * 0.06;
-
-                    card.el.style.transform = 'rotateZ(' + rotateZ + 'deg) scale(' + scale + ')';
-                    card.el.style.transformOrigin = '50% 100%';
-                    card.el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                    card.el.style.zIndex = i + 1;
-                }
-            }
-
-            _startAutoplay() {
-                this._stopAutoplay();
-                var self = this;
-                this.autoplayTimer = setInterval(function () {
-                    if (self.isPaused) return;
-                    if (self.stack.length > 1) {
-                        var topCard = self.stack[self.stack.length - 1];
-                        self.sendToBack(topCard.id);
-                    }
-                }, this.autoplayDelay);
-            }
-
-            _stopAutoplay() {
-                if (this.autoplayTimer) {
-                    clearInterval(this.autoplayTimer);
-                    this.autoplayTimer = null;
-                }
-            }
-
-            setImages(images) {
-                this._stopAutoplay();
-                this.stack = [];
-                this.container.innerHTML = '';
-                document.removeEventListener('pointermove', this._onPointerMove);
-                document.removeEventListener('pointerup', this._onPointerUp);
-                this.images = images;
-                this.dragCard = null;
-                this.isDragging = false;
-                this.currentX = 0;
-                this.currentY = 0;
-                this._render();
-            }
-
-            destroy() {
-                this._stopAutoplay();
-                this.container.innerHTML = '';
-                document.removeEventListener('pointermove', this._onPointerMove);
-                document.removeEventListener('pointerup', this._onPointerUp);
-            }
+            });
         }
 
         window.addEventListener('load', function () {
-            var photoContainer = document.getElementById('photo-stack');
-            if (photoContainer) {
-                window.__photoStack = new PhotoStack(photoContainer, {
-                    images: [
-                        'assets/img/photography/msl/DSC03422.webp',
-                        'assets/img/photography/msl/DSC03507.webp',
-                        'assets/img/photography/msl/DSC04631-2.webp',
-                        'assets/img/photography/msl/DSC06136.webp',
-                        'assets/img/photography/msl/DSC06929.webp',
-                        'assets/img/photography/msl/DSC07139.webp',
-                        'assets/img/photography/msl/DSC07788-2.webp'
-                    ],
-                    randomRotation: true,
-                    sensitivity: 180,
-                    sendToBackOnClick: true,
-                    autoplay: true,
-                    autoplayDelay: 3000,
-                    pauseOnHover: true,
-                    mobileClickOnly: true,
-                    mobileBreakpoint: 768
-                });
-            }
-        });
-
-        // ─── Tab Slider Logic ──────────────────────────────────────────────
-        (function () {
             var albums = {
                 msl: {
-                    title: 'Mekong Salt Lab',
-                    desc: 'Documenting field research at the Mekong Salt Lab project \u2014 capturing scientists, field equipment, and the lab environment.',
+                    id: 'flipbook-msl',
                     images: [
                         'assets/img/photography/msl/DSC03422.webp',
                         'assets/img/photography/msl/DSC03507.webp',
@@ -1348,8 +1139,7 @@
                     ]
                 },
                 street: {
-                    title: 'Street Photography',
-                    desc: 'Candid moments and urban landscapes \u2014 fleeting expressions, light and shadow play on city streets.',
+                    id: 'flipbook-street',
                     images: [
                         'assets/img/photography/street/DSC00482.webp',
                         'assets/img/photography/street/DSC00974.webp',
@@ -1364,8 +1154,7 @@
                     ]
                 },
                 undp: {
-                    title: 'UNDP',
-                    desc: 'Coverage of UNDP initiatives and events \u2014 documenting community impact and development projects.',
+                    id: 'flipbook-undp',
                     images: [
                         'assets/img/photography/undp/DSC02645.webp',
                         'assets/img/photography/undp/DSC08271.webp',
@@ -1376,8 +1165,7 @@
                     ]
                 },
                 unl: {
-                    title: 'UNL',
-                    desc: 'Photos from UNL-related activities \u2014 conferences, workshops, and field visits.',
+                    id: 'flipbook-unl',
                     images: [
                         'assets/img/photography/unl/DSC05818.webp',
                         'assets/img/photography/unl/DSC05838.webp',
@@ -1390,28 +1178,11 @@
                 }
             };
 
-            var tabs = document.querySelectorAll('.photo-tab');
-            var titleEl = document.getElementById('photo-album-title');
-            var descEl = document.getElementById('photo-album-desc');
-            var countEl = document.getElementById('photo-count');
-
-            tabs.forEach(function (tab) {
-                tab.addEventListener('click', function () {
-                    var albumKey = this.dataset.album;
-                    var data = albums[albumKey];
-                    if (!data || !window.__photoStack) return;
-
-                    tabs.forEach(function (t) { t.classList.remove('active'); });
-                    this.classList.add('active');
-
-                    titleEl.textContent = data.title;
-                    descEl.textContent = data.desc;
-                    countEl.textContent = data.images.length + ' photos';
-
-                    window.__photoStack.setImages(data.images);
-                });
-            });
-        })();
+            for (var key in albums) {
+                var a = albums[key];
+                initFlipbook(a.id, a.images);
+            }
+        });
     </script>
 </body>
 
